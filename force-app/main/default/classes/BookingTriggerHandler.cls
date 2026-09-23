@@ -10,10 +10,23 @@ public with sharing class BookingTriggerHandler {
         }
         if (propertyIds.isEmpty()) return;
 
+        // CRUD check before querying Property__c
+        if (!Schema.sObjectType.Property__c.isAccessible()
+            || !Schema.sObjectType.Property__c.fields.Status__c.isAccessible()) {
+            return;
+        }
+
         // Check Property status
         Map<Id, Property__c> propertyMap = new Map<Id, Property__c>(
             [SELECT Id, Status__c FROM Property__c WHERE Id IN :propertyIds]
         );
+
+        // CRUD check before querying Booking__c
+        if (!Schema.sObjectType.Booking__c.isAccessible()
+            || !Schema.sObjectType.Booking__c.fields.Property__c.isAccessible()
+            || !Schema.sObjectType.Booking__c.fields.Status__c.isAccessible()) {
+            return;
+        }
 
         // Check existing Confirmed bookings per property
         Map<Id, Integer> confirmedCountByProperty = new Map<Id, Integer>();
@@ -58,6 +71,12 @@ public with sharing class BookingTriggerHandler {
         }
 
         if (!propertyIdsToUpdate.isEmpty()) {
+            // CRUD check before updating Property__c
+            if (!Schema.sObjectType.Property__c.isUpdateable()
+                || !Schema.sObjectType.Property__c.fields.Status__c.isUpdateable()) {
+                return;
+            }
+
             List<Property__c> propsToUpdate = new List<Property__c>();
             for (Id propId : propertyIdsToUpdate) {
                 propsToUpdate.add(new Property__c(Id = propId, Status__c = 'Booked'));

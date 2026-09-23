@@ -1,4 +1,4 @@
-public class OpportunityTriggerHandler {
+public with sharing class OpportunityTriggerHandler {
 
     /**
      * Blocks an Opportunity from moving into Closed Won if its linked
@@ -16,6 +16,12 @@ public class OpportunityTriggerHandler {
         }
 
         if (propertyIds.isEmpty()) {
+            return;
+        }
+
+        // CRUD check before querying Property__c
+        if (!Schema.sObjectType.Property__c.isAccessible()
+            || !Schema.sObjectType.Property__c.fields.Status__c.isAccessible()) {
             return;
         }
 
